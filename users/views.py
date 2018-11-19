@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from users.forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
+from users.forms import (
+    UserRegisterForm,
+    UserUpdateForm,
+    ProfileUpdateForm)
 
 
 def register(request):
@@ -24,7 +27,7 @@ def profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, 'Your account has been update.')
+            messages.success(request, 'Your account has been updated.')
             return redirect('users-profile')
     else:
         user_form = UserUpdateForm(instance=request.user)
