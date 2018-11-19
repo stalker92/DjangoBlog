@@ -6,32 +6,21 @@ from django.views.generic import (
     CreateView,
     UpdateView,
     DeleteView)
-from blog.models import Post
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    UserPassesTestMixin)
 from django.contrib.auth.models import User
-
-
-def home(request):
-    context = {
-        'posts': Post.objects.all()
-    }
-    return render(request, 'blog/home.html', context)
+from .models import Post
 
 
 class PostListView(ListView):
     model = Post
     template_name = 'blog/home.html'
-    context_object_name = 'posts'
-    ordering = ['date_posted']
+    ordering = ['-date_posted']
     paginate_by = 5
 
 
-class UserPostListView(ListView):
-    model = Post
-    template_name = 'blog/user_posts.html'
-    context_object_name = 'posts'
-    paginate_by = 5
-
+class UserPostListView(PostListView):
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
         return Post.objects.filter(author=user).order_by('-date_posted')
@@ -39,19 +28,6 @@ class UserPostListView(ListView):
 
 class PostDetailView(DetailView):
     model = Post
-
-
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Post
-    success_url = '/'
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
-
-    def test_func(self):
-        post = self.get_object()
-        return self.request.user == post.author
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -63,9 +39,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class AuthorizedPostView(LoginRequiredMixin, UserPassesTestMixin):
     model = Post
-    fields = ['title', 'content']
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -74,6 +49,14 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author
+
+
+class PostDeleteView(AuthorizedPostView, DeleteView):
+    success_url = '/'
+
+
+class PostUpdateView(AuthorizedPostView, UpdateView):
+    fields = ['title', 'content']
 
 
 def about(request):
