@@ -24,5 +24,5 @@ urlpatterns = [
     path('', include('blog.urls')),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG_URL_MAPPING:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
