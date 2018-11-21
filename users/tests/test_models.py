@@ -21,5 +21,5 @@ class ProfileTest(TestCase):
         self.profile.save()
         self.assertEqual(self.new_image.height, 300)
         self.assertEqual(self.new_image.width, 300)
-        # self.assertTrue(mock_image.save.called)
+
 
